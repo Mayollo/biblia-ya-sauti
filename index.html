@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Biblia ya Sauti</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="frame">
+    <header class="topbar">
+      <button id="menuBtn" class="icon">☰</button>
+      <div class="title">BIBLIA YA SAUTI</div>
+      <button id="settingsBtn" class="icon">⚙</button>
+    </header>
+
+    <section class="testament-row">
+      <button id="leftArrow" class="big-arrow">⬅</button>
+      <div id="testamentTitle" class="testament-title">AGANO LA KALE</div>
+      <button id="rightArrow" class="big-arrow">➡</button>
+    </section>
+
+    <main id="bookList" class="book-list">
+      <div class="loading">Inapakia vitabu...</div>
+    </main>
+
+    <footer class="player">
+      <div id="nowTitle" class="now-title">Hakuna kinachochezwa</div>
+      <div class="now-sub"> </div>
+      <div class="seek">
+        <div class="seek-bar"><div id="progressFill" class="progress-fill"></div></div>
+      </div>
+      <div class="controls">
+        <button class="ctrl">⤧</button>
+        <button id="prevBtn" class="ctrl">⏮</button>
+        <button id="playPauseBtn" class="ctrl play">⏯</button>
+        <button id="nextBtn" class="ctrl">⏭</button>
+        <button class="ctrl">🔁</button>
+      </div>
+    </footer>
+  </div>
+
+<script src="script.js" defer></script>
+</body>
+</html>

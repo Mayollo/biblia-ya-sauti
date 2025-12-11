@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Chapter</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="frame">
+    <header class="topbar">
+      <button id="backBtn" class="icon">◀</button>
+      <div id="chapterTitle" class="title">Yoshua 12</div>
+      <button id="bookmarksBtn" class="icon">🔖</button>
+    </header>
+
+    <section class="testament-row">
+      <button id="prevChapter" class="big-arrow">⬅</button>
+      <div id="chapterLabel" class="testament-title">Yoshua 12</div>
+      <button id="nextChapter" class="big-arrow">➡</button>
+    </section>
+
+    <main id="chapterContent" class="chapter-content">
+      <div class="loading">Inapakia sura...</div>
+    </main>
+
+    <footer class="player">
+      <div id="nowTitleChapter" class="now-title">Hakuna kinachochezwa</div>
+      <div class="now-sub"> </div>
+      <div class="seek">
+        <div class="seek-bar"><div id="progressFillChapter" class="progress-fill"></div></div>
+      </div>
+      <div class="controls">
+        <button id="prevVerse" class="ctrl">⏮</button>
+        <button id="playVerse" class="ctrl">⏯</button>
+        <button id="nextVerse" class="ctrl">⏭</button>
+      </div>
+    </footer>
+  </div>
+
+<script src="chapter.js" defer></script>
+</body>
+</html>
