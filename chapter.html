@@ -1,43 +1,63 @@
 <!DOCTYPE html>
 <html lang="sw">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Chapter</title>
-<link rel="stylesheet" href="style.css" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sura</title>
+<link rel="stylesheet" href="style.css">
 </head>
-<body>
-  <div class="frame">
+
+<body class="chapter-page">
+
+<div class="frame">
+
+    <!-- Top bar with BACK BUTTON only -->
     <header class="topbar">
-      <button id="backBtn" class="icon">◀</button>
-      <div id="chapterTitle" class="title">Yoshua 12</div>
-      <button id="bookmarksBtn" class="icon">🔖</button>
+        <button id="backBtn" class="icon">⬅</button>
+        <div class="title"></div>
+        <a href="settings.html" class="icon">⚙</a>
     </header>
 
-    <section class="testament-row">
-      <button id="prevChapter" class="big-arrow">⬅</button>
-      <div id="chapterLabel" class="testament-title">Yoshua 12</div>
-      <button id="nextChapter" class="big-arrow">➡</button>
-    </section>
+    <!-- Chapter Title -->
+    <div id="chapterHeading" class="chapter-heading"></div>
 
-    <main id="chapterContent" class="chapter-content">
-      <div class="loading">Inapakia sura...</div>
+    <!-- Verses load here -->
+    <main id="chapterContent" class="verses-container">
+        <div class="loading">Inapakia sura...</div>
     </main>
 
+    <!-- Bottom audio player -->
     <footer class="player">
-      <div id="nowTitleChapter" class="now-title">Hakuna kinachochezwa</div>
-      <div class="now-sub"> </div>
-      <div class="seek">
-        <div class="seek-bar"><div id="progressFillChapter" class="progress-fill"></div></div>
-      </div>
-      <div class="controls">
-        <button id="prevVerse" class="ctrl">⏮</button>
-        <button id="playVerse" class="ctrl">⏯</button>
-        <button id="nextVerse" class="ctrl">⏭</button>
-      </div>
+        <div id="nowTitle" class="now-title">Hakuna kinachochezwa</div>
+        <div id="nowSub" class="now-sub"></div>
+
+        <div class="seek">
+            <div class="seek-bar">
+                <div id="progressFill" class="progress-fill"></div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="prevBtn" class="ctrl">⏮</button>
+            <button id="playPauseBtn" class="ctrl">⏯</button>
+            <button id="nextBtn" class="ctrl">⏭</button>
+        </div>
     </footer>
-  </div>
+
+</div>
+
+<!-- Bookmark / color popup (will be created dynamically but keep placeholder for structure if needed) -->
+<div id="bookmarkPanel" class="bookmark-panel" style="display:none;">
+  <!-- content filled by JS -->
+</div>
 
 <script src="chapter.js" defer></script>
+
+<script>
+document.getElementById("backBtn").onclick = () => {
+    window.history.back();
+};
+</script>
+
 </body>
 </html>

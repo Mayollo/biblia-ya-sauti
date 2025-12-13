@@ -6,30 +6,38 @@
 <title>Biblia ya Sauti</title>
 <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
   <div class="frame">
+
+    <!-- TOP BAR -->
     <header class="topbar">
       <button id="menuBtn" class="icon">☰</button>
       <div class="title">BIBLIA YA SAUTI</div>
-      <button id="settingsBtn" class="icon">⚙</button>
+      <a href="settings.html" class="icon">⚙</a>
     </header>
 
+    <!-- TESTAMENT SWITCH -->
     <section class="testament-row">
       <button id="leftArrow" class="big-arrow">⬅</button>
       <div id="testamentTitle" class="testament-title">AGANO LA KALE</div>
       <button id="rightArrow" class="big-arrow">➡</button>
     </section>
 
+    <!-- BOOK LIST -->
     <main id="bookList" class="book-list">
       <div class="loading">Inapakia vitabu...</div>
     </main>
 
+    <!-- FOOTER PLAYER -->
     <footer class="player">
       <div id="nowTitle" class="now-title">Hakuna kinachochezwa</div>
-      <div class="now-sub"> </div>
+      <div class="now-sub"></div>
+
       <div class="seek">
         <div class="seek-bar"><div id="progressFill" class="progress-fill"></div></div>
       </div>
+
       <div class="controls">
         <button class="ctrl">⤧</button>
         <button id="prevBtn" class="ctrl">⏮</button>
@@ -38,8 +46,28 @@
         <button class="ctrl">🔁</button>
       </div>
     </footer>
+
   </div>
 
 <script src="script.js" defer></script>
+<script>
+function applyTheme(){
+    const bg = localStorage.getItem('bgColor');
+    const text = localStorage.getItem('textColor');
+    const mode = localStorage.getItem('themeMode');
+
+    if(bg || text){
+        document.body.classList.add("custom-theme");
+        document.body.style.setProperty("--bg-color", bg || "#ffffff");
+        document.body.style.setProperty("--text-color", text || "#000000");
+    }
+    if(mode === "dark"){
+        document.body.style.background = "#222";
+        document.body.style.color = "#fff";
+    }
+}
+applyTheme();
+</script>
+
 </body>
 </html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notes</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="frame">
+
+    <!-- TOP BAR -->
+    <header class="topbar">
+        <button id="backBtn" class="icon">⬅</button>
+        <div class="title">NOTES</div>
+        <div class="dummy"></div>
+    </header>
+
+    <main class="notes-container">
+
+        <button id="addNewNote" class="note-add-btn">+ Andika Note Mpya</button>
+
+        <div id="notesList"></div>
+
+        <button id="clearAll" class="note-add-btn" style="background:#c62828">
+            Futa Zote
+        </button>
+
+    </main>
+
+</div>
+
+<script src="notes.js"></script>
+
+<script>
+document.getElementById("backBtn").onclick = () => history.back();
+</script>
+
+</body>
+</html>
