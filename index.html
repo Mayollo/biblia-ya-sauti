@@ -4,7 +4,13 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Biblia ya Sauti</title>
+
 <link rel="stylesheet" href="style.css" />
+
+<!-- PWA REQUIREMENTS (IMEHAMISHWA HAPA - NDANI YA HEAD) -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1a1a1a">
+
 </head>
 
 <body>
@@ -49,7 +55,9 @@
 
   </div>
 
+<!-- SCRIPT ZAKO ZILIZOKUWEPO (HAIJABADILISHWA) -->
 <script src="script.js" defer></script>
+
 <script>
 function applyTheme(){
     const bg = localStorage.getItem('bgColor');
@@ -68,6 +76,9 @@ function applyTheme(){
 }
 applyTheme();
 </script>
+
+<!-- PWA SERVICE WORKER REGISTRATION (IMEONGEZWA TU) -->
+<script src="app.js"></script>
 
 </body>
 </html>
