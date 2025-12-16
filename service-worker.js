@@ -1,90 +1,100 @@
-/* ======================================================
-   SERVICE WORKER – FINAL VERSION
-   Biblia ya Sauti
-====================================================== */
+/* =========================================
+   SERVICE WORKER – BIBLE APP
+   Clean • Offline • Test Friendly
+========================================= */
 
-const CACHE_VERSION = "biblia-v3";   // 🔥 BADILISHA HII KILA UPDATE
-const APP_CACHE = CACHE_VERSION;
+const CACHE_VERSION = "v1.0.0";
+const CACHE_NAME = `bible-app-${CACHE_VERSION}`;
 
-const CORE_FILES = [
-  "./",
-  "./index.html",
-  "./chapter.html",
-  "./notes.html",
-  "./settings.html",
+/* Files muhimu za msingi */
+const CORE_ASSETS = [
+  "/",                   // root
+  "/index.html",
+  "/chapter.html",
+  "/notes.html",
+  "/settings.html",
 
-  "./style.css",
-  "./audio-core.js",
-  "./script.js",
-  "./chapter.js",
-  "./notes.js",
-  "./settings.js",
+  "/style.css",
 
-  "./bible.json"
+  "/script.js",
+  "/chapter.js",
+  "/notes.js",
+  "/settings.js",
+
+  "/audio-core.js",
+  "/bookmark-core.js",
+
+  "/bible.json",
+
+  "/icons/nyumbani.png"
 ];
 
-/* ======================================================
+/* =========================================
    INSTALL
-====================================================== */
-self.addEventListener("install", (event) => {
-  console.log("[SW] Install");
-  self.skipWaiting();
-
+========================================= */
+self.addEventListener("install", event => {
   event.waitUntil(
-    caches.open(APP_CACHE).then(cache => {
-      return cache.addAll(CORE_FILES);
+    caches.open(CACHE_NAME).then(cache => {
+      console.log("[SW] Caching core assets");
+      return cache.addAll(CORE_ASSETS);
     })
   );
+  self.skipWaiting();
 });
 
-/* ======================================================
-   ACTIVATE (CLEAN OLD CACHES)
-====================================================== */
-self.addEventListener("activate", (event) => {
-  console.log("[SW] Activate");
-
+/* =========================================
+   ACTIVATE
+========================================= */
+self.addEventListener("activate", event => {
   event.waitUntil(
     caches.keys().then(keys =>
       Promise.all(
-        keys.map(k => {
-          if (k !== APP_CACHE) {
-            console.log("[SW] Deleting old cache:", k);
-            return caches.delete(k);
+        keys.map(key => {
+          if (key !== CACHE_NAME) {
+            console.log("[SW] Removing old cache:", key);
+            return caches.delete(key);
           }
         })
       )
     )
   );
-
   self.clients.claim();
 });
 
-/* ======================================================
-   FETCH (NETWORK FIRST – NO STALE FILES)
-====================================================== */
-self.addEventListener("fetch", (event) => {
+/* =========================================
+   FETCH
+   Cache First → Network fallback
+========================================= */
+self.addEventListener("fetch", event => {
   const req = event.request;
 
-  // Bible JSON & JS & CSS → ALWAYS FRESH
-  if (
-    req.url.includes(".js") ||
-    req.url.includes(".css") ||
-    req.url.includes("bible.json")
-  ) {
-    event.respondWith(
-      fetch(req)
+  // skip non-GET requests
+  if (req.method !== "GET") return;
+
+  event.respondWith(
+    caches.match(req).then(cached => {
+      if (cached) return cached;
+
+      return fetch(req)
         .then(res => {
+          // cache only valid responses
+          if (!res || res.status !== 200 || res.type !== "basic") {
+            return res;
+          }
+
           const clone = res.clone();
-          caches.open(APP_CACHE).then(c => c.put(req, clone));
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(req, clone);
+          });
+
           return res;
         })
-        .catch(() => caches.match(req))
-    );
-    return;
-  }
-
-  // Default: cache fallback
-  event.respondWith(
-    fetch(req).catch(() => caches.match(req))
+        .catch(() => {
+          // fallback ya offline (hiari)
+          if (req.destination === "document") {
+            return caches.match("/index.html");
+          }
+        });
+    })
   );
 });
