@@ -1,61 +1,97 @@
-// settings.js
+/* =========================================
+   SETTINGS – THEME & DATA (FINAL)
+========================================= */
 
-function applyThemeFromStorage(){
-  document.documentElement.style.setProperty('--text-color', localStorage.getItem('textColor') || '#000000');
-  document.documentElement.style.setProperty('--bg-color', localStorage.getItem('bgColor') || '#ffffff');
-  document.documentElement.style.setProperty('--book-color', localStorage.getItem('bookColor') || '#000000');
-  document.documentElement.style.setProperty('--chapter-number-color', localStorage.getItem('chapterNumColor') || '#471B1B');
-  document.documentElement.style.setProperty('--verse-text-color', localStorage.getItem('verseTextColor') || '#000000');
+function applyThemeFromStorage() {
+  const mode = localStorage.getItem("themeMode") || "light";
+
+  const root = document.documentElement;
+
+  // colors
+  root.style.setProperty("--text-color", localStorage.getItem("textColor") || "#000000");
+  root.style.setProperty("--bg-color", localStorage.getItem("bgColor") || "#ffffff");
+  root.style.setProperty("--book-color", localStorage.getItem("bookColor") || "#000000");
+  root.style.setProperty("--chapter-number-color", localStorage.getItem("chapterNumColor") || "#471B1B");
+  root.style.setProperty("--verse-text-color", localStorage.getItem("verseTextColor") || "#000000");
+
+  // theme mode
+  document.body.classList.remove("dark", "light");
+
+  if (mode === "dark") {
+    document.body.classList.add("dark");
+  } else if (mode === "light") {
+    document.body.classList.add("light");
+  } else {
+    // system
+    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      document.body.classList.add("dark");
+    } else {
+      document.body.classList.add("light");
+    }
+  }
 }
 
-document.addEventListener('DOMContentLoaded', ()=>{
+document.addEventListener("DOMContentLoaded", () => {
+
   applyThemeFromStorage();
 
-  // set pickers initial values
-  document.getElementById('textColorPicker').value = localStorage.getItem('textColor') || '#000000';
-  document.getElementById('bgColorPicker').value = localStorage.getItem('bgColor') || '#ffffff';
-  document.getElementById('bookColorPicker').value = localStorage.getItem('bookColor') || '#000000';
-  document.getElementById('chapterNumberPicker').value = localStorage.getItem('chapterNumColor') || '#471B1B';
-  document.getElementById('verseColorPicker').value = localStorage.getItem('verseTextColor') || '#000000';
+  /* ===============================
+     INIT RADIO BUTTONS
+  ================================ */
+  const savedMode = localStorage.getItem("themeMode") || "light";
+  document.querySelectorAll('input[name="themeMode"]').forEach(r => {
+    r.checked = r.value === savedMode;
+    r.onchange = () => {
+      localStorage.setItem("themeMode", r.value);
+      applyThemeFromStorage();
+    };
+  });
 
-  document.getElementById('saveColors').onclick = ()=>{
-    const t = document.getElementById('textColorPicker').value;
-    const b = document.getElementById('bgColorPicker').value;
-    const book = document.getElementById('bookColorPicker').value;
-    const ch = document.getElementById('chapterNumberPicker').value;
-    const v = document.getElementById('verseColorPicker').value;
-    localStorage.setItem('textColor', t);
-    localStorage.setItem('bgColor', b);
-    localStorage.setItem('bookColor', book);
-    localStorage.setItem('chapterNumColor', ch);
-    localStorage.setItem('verseTextColor', v);
+  /* ===============================
+     COLOR PICKERS
+  ================================ */
+  textColorPicker.value = localStorage.getItem("textColor") || "#000000";
+  bgColorPicker.value = localStorage.getItem("bgColor") || "#ffffff";
+  bookColorPicker.value = localStorage.getItem("bookColor") || "#000000";
+  chapterNumberPicker.value = localStorage.getItem("chapterNumColor") || "#471B1B";
+  verseColorPicker.value = localStorage.getItem("verseTextColor") || "#000000";
+
+  saveColors.onclick = () => {
+    localStorage.setItem("textColor", textColorPicker.value);
+    localStorage.setItem("bgColor", bgColorPicker.value);
+    localStorage.setItem("bookColor", bookColorPicker.value);
+    localStorage.setItem("chapterNumColor", chapterNumberPicker.value);
+    localStorage.setItem("verseTextColor", verseColorPicker.value);
     applyThemeFromStorage();
-    alert('Mabadiliko yametumika.');
+    alert("Mabadiliko yametumika ✅");
   };
 
-  document.getElementById('exportBookmarks').onclick = ()=>{
-    const bk = JSON.parse(localStorage.getItem('bookmarks')||'[]');
-    const data = JSON.stringify(bk, null, 2);
-    const blob = new Blob([data], {type:'application/json'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'bookmarks.json';
+  /* ===============================
+     DATA ACTIONS
+  ================================ */
+  exportBookmarks.onclick = () => {
+    const data = JSON.stringify(JSON.parse(localStorage.getItem("bookmarks") || "[]"), null, 2);
+    const blob = new Blob([data], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "bookmarks.json";
     a.click();
-    URL.revokeObjectURL(url);
   };
 
-  document.getElementById('clearBookmarks').onclick = ()=>{
-    if(confirm('Ondoa bookmarks zote?')) {
-      localStorage.removeItem('bookmarks');
-      alert('Bookmarks zimeondolewa.');
+  clearBookmarks.onclick = () => {
+    if (confirm("Ondoa bookmarks zote?")) {
+      localStorage.removeItem("bookmarks");
+      alert("Bookmarks zimeondolewa.");
     }
   };
 
-  document.getElementById('showHistory').onclick = ()=>{
-    const hist = JSON.parse(localStorage.getItem('history')||'[]');
-    if(!hist.length) return alert('Hakuna historia.');
-    const top = hist.slice(0,20).map(h=>`${h.book} ${h.chapter} — ${new Date(h.time).toLocaleString()}`).join('\n');
-    alert('Historia (juu 20):\n' + top);
+  showHistory.onclick = () => {
+    const hist = JSON.parse(localStorage.getItem("history") || "[]");
+    if (!hist.length) return alert("Hakuna historia.");
+    alert(
+      hist.slice(0, 20)
+        .map(h => `${h.book} ${h.chapter} — ${new Date(h.time).toLocaleString()}`)
+        .join("\n")
+    );
   };
 });

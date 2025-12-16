@@ -1,168 +1,461 @@
-/* ============================================
-   NOTES STORAGE HELPERS
-============================================ */
-function getStoreArray(key){
-    try { return JSON.parse(localStorage.getItem(key) || "[]"); }
-    catch(e){ return []; }
+/* =========================================
+   NOTES PAGE – FINAL (BOOK LINK FIXED)
+========================================= */
+
+const STORAGE_KEY = "bibleBookmarks";
+const LAST_READ_KEY = "lastReadingPosition";
+
+let bibleData = null;
+let activeBookmark = null;
+let currentTestament = "OT";
+let selectedBook = null;
+
+/* ===============================
+   STORAGE
+================================ */
+function loadBookmarks(){
+  return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
 }
-function setStoreArray(key, arr){
-    localStorage.setItem(key, JSON.stringify(arr));
+function saveBookmarks(list){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+}
+function same(a,b){
+  return a.book===b.book &&
+         a.chapter===b.chapter &&
+         a.from===b.from &&
+         a.to===b.to;
 }
 
-function fmtDate(ts){
-    const d = new Date(ts);
-    return `${d.getDate()} ${d.toLocaleString("en",{month:"short"})} ${d.getFullYear()}`;
+/* ===============================
+   DATE
+================================ */
+function ensureCreatedAt(b){
+  if(!b.createdAt) b.createdAt = Date.now();
+}
+function formatDate(ts){
+  return new Date(ts).toLocaleString("sw-TZ",{
+    day:"2-digit",
+    month:"short",
+    year:"numeric",
+    hour:"2-digit",
+    minute:"2-digit"
+  });
 }
 
-function formatRef(bm){
-    if (bm.startVerse === bm.endVerse){
-        return `${bm.book} ${bm.chapter}:${bm.startVerse}`;
+/* ===============================
+   LOAD BIBLE
+================================ */
+async function loadBible(){
+  if(bibleData) return bibleData;
+  const res = await fetch("bible.json");
+  bibleData = await res.json();
+  return bibleData;
+}
+
+/* ===============================
+   CONTINUE READING
+================================ */
+function continueReading(){
+  const p = JSON.parse(localStorage.getItem(LAST_READ_KEY) || "{}");
+  if(p.book && p.chapter){
+    location.href =
+      `chapter.html?book=${encodeURIComponent(p.book)}&chapter=${p.chapter}`;
+  }else{
+    location.href = "index.html";
+  }
+}
+
+/* ===============================
+   AUDIO
+================================ */
+function playBookmark(bm){
+  if(!window.AudioCore) return;
+
+  const order=[];
+  for(let i=bm.from;i<=bm.to;i++) order.push(i);
+
+  AudioCore.setVerseOrder(order);
+  AudioCore.play(bm.book,bm.chapter,bm.from);
+
+  localStorage.setItem(LAST_READ_KEY, JSON.stringify({
+    book: bm.book,
+    chapter: bm.chapter,
+    verse: bm.from
+  }));
+}
+
+/* ===============================
+   YOUTUBE
+================================ */
+function extractYouTubeID(url){
+  const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/);
+  return m ? m[1] : null;
+}
+
+function normalizeVideos(bm){
+  bm.videos = bm.videos || [];
+  bm.videos = bm.videos.map(v=>{
+    if(typeof v === "string"){
+      return { url: v, note: "" };
     }
-    return `${bm.book} ${bm.chapter}:${bm.startVerse}–${bm.endVerse}`;
+    return v;
+  });
 }
 
-/* ============================================
-   AUDIO ENGINE – PLAYS VERSE RANGE
-============================================ */
-let notesAudio = new Audio();
-let playQueue = [];
-let playIndex = 0;
-
-function playBookmarkAudio(bm){
-    const safeBook = bm.book.toLowerCase().replace(/\s+/g, "_");
-
-    playQueue = [];
-    for (let v = bm.startVerse; v <= bm.endVerse; v++){
-        playQueue.push(`sauti/${safeBook}_${bm.chapter}_${v}.mp3`);
+function addVideo(bm,url){
+  const list = loadBookmarks();
+  list.forEach(b=>{
+    if(same(b,bm)){
+      b.videos = b.videos || [];
+      b.videos.push({ url, note: "" });
     }
-
-    playIndex = 0;
-    playNextInQueue(bm);
+  });
+  saveBookmarks(list);
 }
 
-function playNextInQueue(bm){
-    if (playIndex >= playQueue.length){
-        console.log("Audio ya bookmark imeisha.");
-        return;
+function removeVideo(bm,index){
+  const list = loadBookmarks();
+  list.forEach(b=>{
+    if(same(b,bm)){
+      b.videos.splice(index,1);
     }
+  });
+  saveBookmarks(list);
+}
 
-    const src = playQueue[playIndex];
-    notesAudio.src = src;
-    notesAudio.play();
+/* ===============================
+   SHARE & EXPORT
+================================ */
+function shareVideo(url){
+  if(navigator.share){
+    navigator.share({ title:"Video Reference", url });
+  }else{
+    navigator.clipboard.writeText(url);
+    alert("Link ya video imekopiwa");
+  }
+}
 
-    console.log("Playing:", src);
+function exportVideoAsText(video){
+  const text =
+`VIDEO LINK:
+${video.url}
 
-    notesAudio.onended = () => {
-        playIndex++;
-        playNextInQueue(bm);
+VIDEO NOTES:
+${video.note || "(hakuna notes)"}
+`;
+  const blob = new Blob([text], { type:"text/plain" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "video-notes.txt";
+  a.click();
+}
+
+function exportVideoAsPDF(video){
+  const w = window.open("", "_blank");
+  w.document.write(`
+    <h3>Video Notes</h3>
+    <p><strong>Link:</strong><br>${video.url}</p>
+    <p><strong>Notes:</strong><br>${(video.note||"").replace(/\n/g,"<br>")}</p>
+  `);
+  w.print();
+}
+
+/* ===============================
+   BOOK LINK MODAL
+================================ */
+function openBookModal(bm){
+  activeBookmark = bm;
+  selectedBook = null;
+
+  document.getElementById("chapterSection").classList.add("hidden");
+  document.getElementById("verseSection").classList.add("hidden");
+
+  document.getElementById("bookLinkModal").classList.remove("hidden");
+  renderBookGrid();
+}
+function closeBookModal(){
+  document.getElementById("bookLinkModal").classList.add("hidden");
+}
+
+/* ===============================
+   BOOK GRID (FIXED)
+================================ */
+async function renderBookGrid(){
+  const bible = await loadBible();
+  const grid = document.getElementById("bookGrid");
+  grid.innerHTML = "";
+
+  Object.keys(bible.books)
+    .filter(b => bible.books[b].testament === currentTestament)
+    .forEach(book => {
+      const d = document.createElement("div");
+      d.textContent = book;
+
+      if (book === selectedBook){
+        d.classList.add("active");
+      }
+
+      d.onclick = () => {
+        selectedBook = book;
+
+        // 🔑 MUHIMU: FUNGUA CHAPTERS
+        document.getElementById("chapterSection").classList.remove("hidden");
+        document.getElementById("verseSection").classList.add("hidden");
+
+        renderBookGrid();          // refresh highlight
+        renderChapterGrid(book);  // onyesha sura
+      };
+
+      grid.appendChild(d);
+    });
+}
+
+/* ===============================
+   CHAPTER GRID
+================================ */
+async function renderChapterGrid(book){
+  const bible = await loadBible();
+  const grid = document.getElementById("chapterGrid");
+  grid.innerHTML = "";
+
+  Object.keys(bible.books[book].chapters).forEach(ch => {
+    const s = document.createElement("span");
+    s.textContent = ch;
+
+    s.onclick = () => {
+      document.getElementById("verseSection").classList.remove("hidden");
+      renderVerseGrid(book, ch);
     };
+
+    grid.appendChild(s);
+  });
 }
 
-/* ============================================
-   RENDER NOTES LIST
-============================================ */
+/* ===============================
+   VERSE GRID
+================================ */
+async function renderVerseGrid(book, chapter){
+  const bible = await loadBible();
+  const grid = document.getElementById("verseGrid");
+  grid.innerHTML = "";
+
+  Object.keys(bible.books[book].chapters[chapter].verses).forEach(v => {
+    const s = document.createElement("span");
+    s.textContent = v;
+
+    s.onclick = () => {
+      addBookLink(book, Number(chapter), Number(v));
+    };
+
+    grid.appendChild(s);
+  });
+}
+
+/* ===============================
+   ADD BOOK LINK
+================================ */
+function addBookLink(book,chapter,verse){
+  const list = loadBookmarks();
+  list.forEach(b=>{
+    if(same(b,activeBookmark)){
+      b.links = b.links || [];
+      if(!b.links.find(l =>
+        l.book===book &&
+        l.chapter===chapter &&
+        l.verse===verse
+      )){
+        b.links.push({ book, chapter, verse });
+      }
+    }
+  });
+  saveBookmarks(list);
+  closeBookModal();
+  renderNotes();
+}
+
+/* ===============================
+   RENDER NOTES
+================================ */
 function renderNotes(){
-    const wrap = document.getElementById("notesList");
-    const notes = getStoreArray("bookmarks").sort((a,b)=> b.created - a.created);
+  const wrap = document.getElementById("notesContainer");
+  const list = loadBookmarks();
+  wrap.innerHTML = "";
 
-    if (notes.length === 0){
-        wrap.innerHTML = `<div class="empty">Hakuna bookmarks wala notes bado.</div>`;
-        return;
-    }
+  list.forEach(bm=>{
+    ensureCreatedAt(bm);
+    normalizeVideos(bm);
 
-    wrap.innerHTML = "";
+    const c = document.createElement("div");
+    c.className = "note-card";
 
-    notes.forEach(n => {
-        const ref = formatRef(n);
+    c.innerHTML = `
+      <div class="note-header">
+        <div>
+          <strong>${bm.book} ${bm.chapter}:${bm.from}-${bm.to}</strong>
+          <div class="note-date">🕒 ${formatDate(bm.createdAt)}</div>
+        </div>
+        <div class="note-actions">
+          <button class="play">▶</button>
+          <button class="link">➕ Kitabu</button>
+          <button class="add-video">➕ Video</button>
+          <button class="toggle-notes">➕ Notes</button>
+          <button class="del">🗑</button>
+        </div>
+      </div>
 
-        const card = document.createElement("div");
-        card.className = "note-item";
+      <textarea class="general-notes hidden"
+        placeholder="Andika general notes hapa...">${bm.note||""}</textarea>
 
-        card.innerHTML = `
-            <div class="note-header">
-                <div class="note-ref">${ref}</div>
-                <div class="note-date">${fmtDate(n.created)}</div>
+      <div class="video-input hidden">
+        <input class="video-url" placeholder="Bandika link ya YouTube..." />
+        <button class="video-ok">OK</button>
+      </div>
+
+      <div class="video-list"></div>
+    `;
+
+    /* GENERAL NOTES */
+    const gNotes = c.querySelector(".general-notes");
+    c.querySelector(".toggle-notes").onclick = ()=>{
+      gNotes.classList.toggle("hidden");
+      gNotes.focus();
+    };
+    gNotes.oninput = ()=>{
+      const arr = loadBookmarks();
+      arr.forEach(b=>{ if(same(b,bm)) b.note = gNotes.value; });
+      saveBookmarks(arr);
+    };
+
+    /* ADD VIDEO */
+    const vBox = c.querySelector(".video-input");
+    const vInput = c.querySelector(".video-url");
+    const vList = c.querySelector(".video-list");
+
+    c.querySelector(".add-video").onclick = ()=>{
+      vBox.classList.remove("hidden");
+      vInput.value = "";
+      vInput.focus();
+    };
+
+    c.querySelector(".video-ok").onclick = ()=>{
+      const id = extractYouTubeID(vInput.value);
+      if(!id) return alert("Link ya YouTube si sahihi");
+      addVideo(bm, vInput.value);
+      vBox.classList.add("hidden");
+      renderNotes();
+    };
+
+    /* VIDEOS */
+    bm.videos.forEach((v,idx)=>{
+      const id = extractYouTubeID(v.url);
+      if(!id) return;
+
+      const vc = document.createElement("div");
+      vc.className = "video-card";
+
+      vc.innerHTML = `
+        <iframe src="https://www.youtube.com/embed/${id}"
+          height="200" allowfullscreen></iframe>
+
+        <div class="video-actions">
+          <button class="toggle-video-note">➕ Video Notes</button>
+          <button class="remove-video">❌ Ondoa Video</button>
+        </div>
+
+        <div class="video-extra-actions">
+          <button class="share-video">🔗 Share</button>
+          <div class="export-wrap">
+            <button class="export-btn">📤 Export ▾</button>
+            <div class="export-menu hidden">
+              <button class="export-text">as Text</button>
+              <button class="export-pdf">as PDF</button>
             </div>
+          </div>
+        </div>
 
-            <textarea class="note-text" data-id="${n.id}">${n.note || ""}</textarea>
+        <textarea class="video-note hidden"
+          placeholder="Andika notes za video hii...">${v.note||""}</textarea>
+      `;
 
-            <div class="note-actions">
-                <button class="btn playBtn" data-id="${n.id}">▶ Sauti</button>
-                <button class="btn saveBtn" data-id="${n.id}">Hifadhi</button>
-                <button class="btn delBtn" data-id="${n.id}">Futa</button>
-                <button class="btn openBtn" data-id="${n.id}">Fungua</button>
-            </div>
-        `;
+      const vNote = vc.querySelector(".video-note");
 
-        wrap.appendChild(card);
+      vc.querySelector(".toggle-video-note").onclick = ()=>{
+        vNote.classList.toggle("hidden");
+        vNote.focus();
+      };
+
+      vNote.oninput = ()=>{
+        const arr = loadBookmarks();
+        arr.forEach(b=>{
+          if(same(b,bm)) b.videos[idx].note = vNote.value;
+        });
+        saveBookmarks(arr);
+      };
+
+      vc.querySelector(".remove-video").onclick = ()=>{
+        if(confirm("Ondoa video hii?")){
+          removeVideo(bm, idx);
+          renderNotes();
+        }
+      };
+
+      vc.querySelector(".share-video").onclick = ()=>{
+        shareVideo(v.url);
+      };
+
+      const exportMenu = vc.querySelector(".export-menu");
+      vc.querySelector(".export-btn").onclick = ()=>{
+        exportMenu.classList.toggle("hidden");
+      };
+      vc.querySelector(".export-text").onclick = ()=>{
+        exportVideoAsText(v);
+        exportMenu.classList.add("hidden");
+      };
+      vc.querySelector(".export-pdf").onclick = ()=>{
+        exportVideoAsPDF(v);
+        exportMenu.classList.add("hidden");
+      };
+
+      vList.appendChild(vc);
     });
 
-    /* PLAY BUTTON */
-    document.querySelectorAll(".playBtn").forEach(btn => {
-        btn.onclick = () => {
-            const id = btn.dataset.id;
-            const list = getStoreArray("bookmarks");
-            const bm = list.find(x => x.id === id);
-            if (!bm) return;
+    /* DELETE BOOKMARK */
+    c.querySelector(".del").onclick = ()=>{
+      if(confirm("Futa bookmark yote pamoja na notes na video?")){
+        saveBookmarks(loadBookmarks().filter(b=>!same(b,bm)));
+        renderNotes();
+      }
+    };
 
-            playBookmarkAudio(bm);
-        };
-    });
+    /* AUDIO & BOOK LINK */
+    c.querySelector(".play").onclick = ()=>playBookmark(bm);
+    c.querySelector(".link").onclick = ()=>openBookModal(bm);
 
-    /* SAVE NOTE */
-    document.querySelectorAll(".saveBtn").forEach(btn=>{
-        btn.onclick = () => {
-            const id = btn.dataset.id;
-            const area = document.querySelector(`textarea[data-id="${id}"]`).value;
+    wrap.appendChild(c);
+  });
 
-            const list = getStoreArray("bookmarks").map(n=>{
-                if (n.id === id) n.note = area;
-                return n;
-            });
-            setStoreArray("bookmarks", list);
-            alert("Note imehifadhiwa!");
-        };
-    });
-
-    /* DELETE */
-    document.querySelectorAll(".delBtn").forEach(btn=>{
-        btn.onclick = () => {
-            if (!confirm("Futa bookmark hii?")) return;
-            const id = btn.dataset.id;
-            const list = getStoreArray("bookmarks").filter(n=> n.id !== id);
-            setStoreArray("bookmarks", list);
-            renderNotes();
-        };
-    });
-
-    /* OPEN IN BIBLE */
-    document.querySelectorAll(".openBtn").forEach(btn=>{
-        btn.onclick = () => {
-            const id = btn.dataset.id;
-            const list = getStoreArray("bookmarks");
-            const b = list.find(x=> x.id === id);
-            if (!b) return;
-
-            window.location.href =
-                `chapter.html?book=${encodeURIComponent(b.book)}&chapter=${b.chapter}&jump=${b.startVerse}`;
-        };
-    });
+  saveBookmarks(list);
 }
 
-/* ============================================
-   PAGE INIT
-============================================ */
-document.addEventListener("DOMContentLoaded", ()=>{
-    renderNotes();
+/* ===============================
+   INIT
+================================ */
+document.addEventListener("DOMContentLoaded",()=>{
+  document.getElementById("continueReadingBtn").onclick = continueReading;
+  document.getElementById("cancelBookLinkBtn").onclick = closeBookModal;
 
-    document.getElementById("clearAll").onclick = () => {
-        if (!confirm("Futa bookmarks zote?")) return;
-        setStoreArray("bookmarks", []);
-        renderNotes();
-    };
+  document.getElementById("otBtn").onclick = ()=>{
+    currentTestament="OT";
+    otBtn.classList.add("active");
+    ntBtn.classList.remove("active");
+    renderBookGrid();
+  };
+  document.getElementById("ntBtn").onclick = ()=>{
+    currentTestament="NT";
+    ntBtn.classList.add("active");
+    otBtn.classList.remove("active");
+    renderBookGrid();
+  };
 
-    document.getElementById("addNewNote").onclick = () => {
-        alert("Chagua mstari kwenye Biblia ili kuongeza bookmark.");
-        history.back();
-    };
+  renderNotes();
 });

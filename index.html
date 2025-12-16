@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Biblia ya Sauti</title>
 
-<link rel="stylesheet" href="style.css" />
+<link rel="stylesheet" href="style.css?v=2">
+
 
 <!-- PWA REQUIREMENTS (IMEHAMISHWA HAPA - NDANI YA HEAD) -->
 <link rel="manifest" href="manifest.json">
@@ -35,23 +36,7 @@
       <div class="loading">Inapakia vitabu...</div>
     </main>
 
-    <!-- FOOTER PLAYER -->
-    <footer class="player">
-      <div id="nowTitle" class="now-title">Hakuna kinachochezwa</div>
-      <div class="now-sub"></div>
-
-      <div class="seek">
-        <div class="seek-bar"><div id="progressFill" class="progress-fill"></div></div>
-      </div>
-
-      <div class="controls">
-        <button class="ctrl">⤧</button>
-        <button id="prevBtn" class="ctrl">⏮</button>
-        <button id="playPauseBtn" class="ctrl play">⏯</button>
-        <button id="nextBtn" class="ctrl">⏭</button>
-        <button class="ctrl">🔁</button>
-      </div>
-    </footer>
+ 
 
   </div>
 
@@ -78,7 +63,11 @@ applyTheme();
 </script>
 
 <!-- PWA SERVICE WORKER REGISTRATION (IMEONGEZWA TU) -->
+<script src="audio-core.js"></script>
+<script src="script.js"></script>
 <script src="app.js"></script>
+
+
 
 </body>
 </html>

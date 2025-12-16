@@ -1,74 +1,26 @@
 <!DOCTYPE html>
 <html lang="sw">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Bookmarks</title>
-<link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bookmarks</title>
+
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="frame">
-    <header class="topbar">
-      <button id="backBtn" class="icon">⬅</button>
-      <div class="title">VYAKALA — Bookmarks</div>
-      <div class="dummy"></div>
-    </header>
 
-    <main id="bmList" class="bookmarks-list">
-      <div class="loading">Inapakia bookmarks...</div>
-    </main>
+<header class="top-bar">
+  <a href="index.html" class="home-btn">
+    <img src="icons/nyumbani.png" alt="Nyumbani">
+  </a>
+  <h2>Bookmarks</h2>
+</header>
 
-  </div>
+<div id="bookmarkList" class="bookmark-list">
+  <!-- rendered by JS -->
+</div>
 
-<script src="helpers.js"></script>
-<script>
-document.getElementById("backBtn").onclick = ()=> history.back();
-
-function renderBookmarks() {
-  const wrap = document.getElementById('bmList');
-  const arr = getStoreArray('bookmarks').slice().reverse(); // latest first
-  if (!arr || arr.length === 0) {
-    wrap.innerHTML = '<div class="loading">Hakuna bookmark yoyote</div>';
-    return;
-  }
-  wrap.innerHTML = '';
-  arr.forEach(bm => {
-    const card = document.createElement('div'); card.className = 'bookmark-card';
-    const sw = document.createElement('div'); sw.className = 'bookmark-color-swatch';
-    sw.style.background = bm.color;
-    const meta = document.createElement('div'); meta.className = 'bookmark-meta';
-    const title = document.createElement('div'); title.style.fontWeight='700';
-    title.innerText = `${bm.book} ${bm.chapter} : ${formatRange(bm.verses)}`;
-    const time = document.createElement('div'); time.style.fontSize='13px'; time.style.color='#666';
-    time.innerText = new Date(bm.created).toLocaleString();
-    meta.appendChild(title); meta.appendChild(time);
-
-    const actions = document.createElement('div'); actions.className = 'bookmark-actions';
-    const openBtn = document.createElement('button'); openBtn.innerText = 'Fungua';
-    openBtn.onclick = ()=> {
-      // open chapter and jump to first verse
-      const first = bm.verses.slice().sort((a,b)=>a-b)[0];
-      window.location.href = `chapter.html?book=${encodeURIComponent(bm.book)}&chapter=${bm.chapter}&jump=${first}`;
-    };
-    const delBtn = document.createElement('button'); delBtn.innerText = 'Futa';
-    delBtn.onclick = ()=>{
-      if (!confirm('Unataka kufuta bookmark hii?')) return;
-      removeFromStoreById('bookmarks', bm.id);
-      showToast('Bookmark imefutwa');
-      renderBookmarks();
-    };
-
-    actions.appendChild(openBtn); actions.appendChild(delBtn);
-
-    card.appendChild(sw); card.appendChild(meta); card.appendChild(actions);
-    wrap.appendChild(card);
-  });
-}
-
-document.addEventListener('DOMContentLoaded', ()=> {
-  renderBookmarks();
-});
-</script>
-
+<script src="audio-core.js"></script>
+<script src="bookmarks.js"></script>
 </body>
 </html>

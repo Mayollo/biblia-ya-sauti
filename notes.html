@@ -1,42 +1,68 @@
 <!DOCTYPE html>
 <html lang="sw">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Notes</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notes</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 
-<body>
+<body class="notes-page">
 
-<div class="frame">
+<div class="app">
 
-    <!-- TOP BAR -->
-    <header class="topbar">
-        <button id="backBtn" class="icon">⬅</button>
-        <div class="title">NOTES</div>
-        <div class="dummy"></div>
-    </header>
+  <!-- TOP BAR -->
+  <header class="top-bar">
+    <a href="index.html" class="home-btn">
+      <img src="icons/nyumbani.png" alt="Nyumbani">
+    </a>
 
-    <main class="notes-container">
+    <h2>Notes</h2>
 
-        <button id="addNewNote" class="note-add-btn">+ Andika Note Mpya</button>
+    <button id="continueReadingBtn" class="continue-btn">
+      ▶ Endelea Kusoma
+    </button>
+  </header>
 
-        <div id="notesList"></div>
-
-        <button id="clearAll" class="note-add-btn" style="background:#c62828">
-            Futa Zote
-        </button>
-
-    </main>
+  <!-- NOTES LIST -->
+  <div id="notesContainer" class="notes-container"></div>
 
 </div>
 
+<!-- BOOK LINK MODAL -->
+<div id="bookLinkModal" class="modal hidden">
+  <div class="modal-box large">
+
+    <h3>➕ Unganisha Kitabu</h3>
+
+    <div class="testament-toggle">
+      <button id="otBtn" class="testament-btn active">Agano la Kale</button>
+      <button id="ntBtn" class="testament-btn">Agano Jipya</button>
+    </div>
+
+    <section>
+      <h4>Vitabu</h4>
+      <div id="bookGrid" class="book-grid"></div>
+    </section>
+
+    <section id="chapterSection" class="hidden">
+      <h4>Sura</h4>
+      <div id="chapterGrid" class="chip-grid"></div>
+    </section>
+
+    <section id="verseSection" class="hidden">
+      <h4>Mstari</h4>
+      <div id="verseGrid" class="chip-grid"></div>
+    </section>
+
+    <div class="modal-actions">
+      <button id="cancelBookLinkBtn">Funga</button>
+    </div>
+
+  </div>
+</div>
+
+<script src="audio-core.js"></script>
 <script src="notes.js"></script>
-
-<script>
-document.getElementById("backBtn").onclick = () => history.back();
-</script>
-
 </body>
 </html>

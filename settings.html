@@ -4,7 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Settings</title>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=2">
+<div class="settings-item">
+  <a href="bookmarks.html">📚 Bookmarks</a>
+</div>
+
+
 </head>
 <body>
 <div class="frame">
@@ -71,9 +76,10 @@
   </main>
 </div>
 
-<script src="settings.js" defer></script>
+<script src="settings.js"></script>
 <script>
-document.getElementById("backBtn").onclick = ()=> history.back();
+document.getElementById("backBtn").onclick = () => history.back();
 </script>
+
 </body>
 </html>
