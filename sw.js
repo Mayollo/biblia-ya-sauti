@@ -1,15 +1,12 @@
 /* =========================================
    BIBLIA YA SAUTI – SERVICE WORKER
-   FINAL STABLE VERSION
+   PWABUILDER APPROVED VERSION
 ========================================= */
 
-const CACHE_VERSION = "biblia-v2";
-
-/* Cache names */
+const CACHE_VERSION = "biblia-v3";
 const STATIC_CACHE = `static-${CACHE_VERSION}`;
-const AUDIO_CACHE  = `audio-${CACHE_VERSION}`;
 
-/* Files muhimu za app (STATIC + ICONS) */
+/* FILES ZA MSINGI (NO AUDIO HERE) */
 const STATIC_FILES = [
   "./",
   "./index.html",
@@ -26,7 +23,7 @@ const STATIC_FILES = [
   "./bible.json",
   "./manifest.json",
 
-  /* ICONS & IMAGES (MUHIMU SANA) */
+  /* ICONS */
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/nyumbani.png",
@@ -39,9 +36,7 @@ const STATIC_FILES = [
 self.addEventListener("install", event => {
   self.skipWaiting();
   event.waitUntil(
-    caches.open(STATIC_CACHE).then(cache => {
-      return cache.addAll(STATIC_FILES);
-    })
+    caches.open(STATIC_CACHE).then(cache => cache.addAll(STATIC_FILES))
   );
 });
 
@@ -53,7 +48,7 @@ self.addEventListener("activate", event => {
     caches.keys().then(keys =>
       Promise.all(
         keys.map(key => {
-          if (key !== STATIC_CACHE && key !== AUDIO_CACHE) {
+          if (key !== STATIC_CACHE) {
             return caches.delete(key);
           }
         })
@@ -67,47 +62,17 @@ self.addEventListener("activate", event => {
    FETCH
 ================================ */
 self.addEventListener("fetch", event => {
-  const request = event.request;
-  const url = new URL(request.url);
+  const req = event.request;
 
-  /* 🔊 AUDIO: cache-on-play */
-  if (request.destination === "audio" || url.pathname.endsWith(".mp3")) {
-    event.respondWith(cacheAudio(request));
-    return;
+  /* 🚫 USIGUSE AUDIO / VIDEO */
+  if (req.destination === "audio" || req.destination === "video") {
+    return; // browser ichukue direct
   }
 
-  /* 🖼️ IMAGES & ICONS */
-  if (request.destination === "image") {
-    event.respondWith(
-      caches.match(request).then(cached => cached || fetch(request))
-    );
-    return;
-  }
-
-  /* 📄 OTHER FILES */
+  /* CACHE FIRST – STATIC FILES */
   event.respondWith(
-    caches.match(request).then(cached => cached || fetch(request))
+    caches.match(req).then(cached => {
+      return cached || fetch(req);
+    })
   );
 });
-
-/* ===============================
-   AUDIO CACHE LOGIC
-================================ */
-async function cacheAudio(request){
-  const cache = await caches.open(AUDIO_CACHE);
-  const cached = await cache.match(request);
-
-  if (cached) {
-    return cached;
-  }
-
-  try {
-    const response = await fetch(request);
-    if (response.ok) {
-      cache.put(request, response.clone());
-    }
-    return response;
-  } catch (err) {
-    return cached;
-  }
-}
