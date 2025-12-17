@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="style.css?v=2" />
 
   <!-- PWA -->
-  <link rel="manifest" href="manifest.json" />
+  <link rel="manifest" href="./manifest.json" />
   <meta name="theme-color" content="#1a1a1a" />
 </head>
 
@@ -17,18 +17,14 @@
 
 <div class="frame">
 
-  <!-- =========================
-       TOP BAR
-  ========================== -->
+  <!-- TOP BAR -->
   <header class="topbar">
     <button id="menuBtn" class="icon">☰</button>
     <div class="title">BIBLIA YA SAUTI</div>
     <a href="settings.html" class="icon">⚙</a>
   </header>
 
-  <!-- =========================
-       TESTAMENT SWITCH
-  ========================== -->
+  <!-- TESTAMENT SWITCH -->
   <section class="testament-row">
     <button id="leftArrow" class="big-arrow">⬅</button>
     <div id="testamentTitle" class="testament-title">
@@ -37,52 +33,23 @@
     <button id="rightArrow" class="big-arrow">➡</button>
   </section>
 
-  <!-- =========================
-       BOOK LIST
-  ========================== -->
+  <!-- BOOK LIST -->
   <main id="bookList" class="book-list">
     <div class="loading">Inapakia vitabu...</div>
   </main>
 
 </div>
 
-<!-- =========================
-     APP SCRIPTS (NO DUPLICATES)
-========================== -->
+<!-- APP LOGIC -->
 <script src="audio-core.js"></script>
 <script src="script.js"></script>
 
-<!-- =========================
-     THEME APPLY (ULIOKUWA NAO)
-========================== -->
-<script>
-  function applyTheme(){
-    const bg = localStorage.getItem('bgColor');
-    const text = localStorage.getItem('textColor');
-    const mode = localStorage.getItem('themeMode');
-
-    if (bg || text) {
-      document.body.classList.add("custom-theme");
-      document.body.style.setProperty("--bg-color", bg || "#ffffff");
-      document.body.style.setProperty("--text-color", text || "#000000");
-    }
-
-    if (mode === "dark") {
-      document.body.style.background = "#222";
-      document.body.style.color = "#fff";
-    }
-  }
-  applyTheme();
-</script>
-
-<!-- =========================
-     SERVICE WORKER REGISTRATION
-========================== -->
+<!-- SERVICE WORKER REGISTRATION (GITHUB PAGES SAFE) -->
 <script>
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
       navigator.serviceWorker
-        .register("service-worker.js")
+        .register("./service-worker.js")
         .then(reg => {
           console.log("Service Worker registered:", reg.scope);
         })

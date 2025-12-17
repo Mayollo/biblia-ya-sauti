@@ -1,9 +1,9 @@
 /* =========================================
    BIBLIA YA SAUTI – SERVICE WORKER
-   APK & OFFLINE READY
+   GITHUB PAGES + APK READY
 ========================================= */
 
-const CACHE_VERSION = "biblia-apk-v1";
+const CACHE_VERSION = "biblia-v1";
 
 /* Cache names */
 const STATIC_CACHE = `static-${CACHE_VERSION}`;
@@ -11,15 +11,17 @@ const AUDIO_CACHE  = `audio-${CACHE_VERSION}`;
 
 /* Files muhimu za app */
 const STATIC_FILES = [
-  "/",
-  "/index.html",
-  "/chapter.html",
-  "/notes.html",
-  "/style.css",
-  "/script.js",
-  "/chapter.js",
-  "/notes.js",
-  "/bible.json"
+  "./",
+  "./index.html",
+  "./style.css",
+  "./script.js",
+  "./audio-core.js",
+  "./chapter.html",
+  "./chapter.js",
+  "./notes.html",
+  "./notes.js",
+  "./bible.json",
+  "./manifest.json"
 ];
 
 /* ===============================
@@ -27,11 +29,8 @@ const STATIC_FILES = [
 ================================ */
 self.addEventListener("install", event => {
   self.skipWaiting();
-
   event.waitUntil(
-    caches.open(STATIC_CACHE).then(cache => {
-      return cache.addAll(STATIC_FILES);
-    })
+    caches.open(STATIC_CACHE).then(cache => cache.addAll(STATIC_FILES))
   );
 });
 
@@ -43,10 +42,7 @@ self.addEventListener("activate", event => {
     caches.keys().then(keys =>
       Promise.all(
         keys.map(key => {
-          if (
-            key !== STATIC_CACHE &&
-            key !== AUDIO_CACHE
-          ) {
+          if (key !== STATIC_CACHE && key !== AUDIO_CACHE) {
             return caches.delete(key);
           }
         })
@@ -60,20 +56,18 @@ self.addEventListener("activate", event => {
    FETCH
 ================================ */
 self.addEventListener("fetch", event => {
-  const request = event.request;
-  const url = new URL(request.url);
+  const req = event.request;
+  const url = new URL(req.url);
 
-  /* 🔊 AUDIO: cache-on-play */
-  if (request.destination === "audio" || url.pathname.endsWith(".mp3")) {
-    event.respondWith(cacheAudio(request));
+  /* 🔊 AUDIO – auto cache on play */
+  if (req.destination === "audio" || url.pathname.endsWith(".mp3")) {
+    event.respondWith(cacheAudio(req));
     return;
   }
 
   /* 📄 STATIC FILES */
   event.respondWith(
-    caches.match(request).then(cached => {
-      return cached || fetch(request);
-    })
+    caches.match(req).then(cached => cached || fetch(req))
   );
 });
 
@@ -84,17 +78,13 @@ async function cacheAudio(request){
   const cache = await caches.open(AUDIO_CACHE);
   const cached = await cache.match(request);
 
-  if (cached) {
-    return cached; // offline ready
-  }
+  if (cached) return cached;
 
-  try {
-    const response = await fetch(request);
-    if (response.ok) {
-      cache.put(request, response.clone());
-    }
-    return response;
-  } catch (err) {
-    return cached; // fallback
+  try{
+    const res = await fetch(request);
+    if (res.ok) cache.put(request, res.clone());
+    return res;
+  }catch(e){
+    return cached;
   }
 }
