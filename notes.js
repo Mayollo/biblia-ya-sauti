@@ -1,8 +1,9 @@
 /* =========================================
-   NOTES PAGE – FINAL
-   +Notes juu ya videos
-   +Video Notes per video
-   +Ondoa Video
+   NOTES PAGE – FINAL FULL (STABLE)
+   ✔ Play audio ndani ya Notes
+   ✔ +Kitabu works
+   ✔ +Video shows iframe
+   ✔ Export: Text / PDF / Share
 ========================================= */
 
 const STORAGE_KEY = "bibleBookmarks";
@@ -28,10 +29,12 @@ function same(a,b){
 }
 
 /* ===============================
-   DATE
+   DATE & NORMALIZE
 ================================ */
 function ensureCreatedAt(b){
   if(!b.createdAt) b.createdAt = Date.now();
+  b.videos = b.videos || [];
+  b.links  = b.links  || [];
 }
 function formatDate(ts){
   return new Date(ts).toLocaleString("sw-TZ",{
@@ -64,16 +67,17 @@ function continueReading(){
 }
 
 /* ===============================
-   AUDIO
+   AUDIO – PLAY INSIDE NOTES
 ================================ */
 function playBookmark(bm){
-  if(!window.AudioCore) return;
-
+  if (!window.AudioCore) {
+    alert("AudioCore haipo");
+    return;
+  }
   const order=[];
   for(let i=bm.from;i<=bm.to;i++) order.push(i);
-
   AudioCore.setVerseOrder(order);
-  AudioCore.play(bm.book,bm.chapter,bm.from);
+  AudioCore.play(bm.book, bm.chapter, bm.from);
 
   localStorage.setItem(LAST_READ_KEY, JSON.stringify({
     book: bm.book, chapter: bm.chapter, verse: bm.from
@@ -81,40 +85,66 @@ function playBookmark(bm){
 }
 
 /* ===============================
-   YOUTUBE
+   EXPORT
 ================================ */
-function extractYouTubeID(url){
-  const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/);
-  return m ? m[1] : null;
+function buildExportText(bm){
+  let t=`📖 ${bm.book} ${bm.chapter}:${bm.from}-${bm.to}\n`;
+  t+=`🕒 ${formatDate(bm.createdAt)}\n\n`;
+  if(bm.note) t+=`📝 Notes:\n${bm.note}\n\n`;
+  if(bm.links.length){
+    t+="🔗 Links:\n";
+    bm.links.forEach(l=>t+=`- ${l.book} ${l.chapter}:${l.verse}\n`);
+    t+="\n";
+  }
+  if(bm.videos.length){
+    t+="🎬 Videos:\n";
+    bm.videos.forEach(v=>t+=`- ${v.url}\n`);
+  }
+  return t;
+}
+function exportText(bm){
+  const blob=new Blob([buildExportText(bm)],{type:"text/plain"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download=`${bm.book}_${bm.chapter}_${bm.from}-${bm.to}.txt`;
+  a.click();
+}
+function exportPDF(bm){
+  const w=window.open("", "_blank");
+  w.document.write(`<pre>${buildExportText(bm)}</pre>`);
+  w.document.close();
+  w.print();
+}
+function exportShare(bm){
+  const t=buildExportText(bm);
+  if(navigator.share){
+    navigator.share({ title:"Bible Note", text:t });
+  } else {
+    navigator.clipboard.writeText(t);
+    alert("Imecopy kwenye clipboard");
+  }
 }
 
-function normalizeVideos(bm){
-  bm.videos = bm.videos || [];
-  bm.videos = bm.videos.map(v=>{
-    if(typeof v === "string"){
-      return { url: v, note: "" };
-    }
-    return v;
-  });
+/* ===============================
+   VIDEO
+================================ */
+function extractYouTubeID(u){
+  const m=u.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/);
+  return m?m[1]:null;
 }
-
 function addVideo(bm,url){
-  const list = loadBookmarks();
+  const list=loadBookmarks();
   list.forEach(b=>{
     if(same(b,bm)){
-      b.videos = b.videos || [];
-      b.videos.push({ url, note: "" });
+      b.videos.push({ url, note:"" });
     }
   });
   saveBookmarks(list);
 }
-
 function removeVideo(bm, index){
-  const list = loadBookmarks();
+  const list=loadBookmarks();
   list.forEach(b=>{
-    if(same(b,bm)){
-      b.videos.splice(index, 1);
-    }
+    if(same(b,bm)) b.videos.splice(index,1);
   });
   saveBookmarks(list);
 }
@@ -123,45 +153,32 @@ function removeVideo(bm, index){
    BOOK LINK MODAL
 ================================ */
 function openBookModal(bm){
-  activeBookmark = bm;
-  selectedBook = null;
-
+  activeBookmark=bm;
+  selectedBook=null;
   document.getElementById("chapterSection").classList.add("hidden");
   document.getElementById("verseSection").classList.add("hidden");
-
   document.getElementById("bookLinkModal").classList.remove("hidden");
   renderBookGrid();
 }
 function closeBookModal(){
   document.getElementById("bookLinkModal").classList.add("hidden");
 }
-
-/* ===============================
-   BOOK GRID
-================================ */
 async function renderBookGrid(){
-  const bible = await loadBible();
-  const grid = document.getElementById("bookGrid");
-  grid.innerHTML="";
-
+  const bible=await loadBible();
+  const g=document.getElementById("bookGrid");
+  g.innerHTML="";
   Object.keys(bible.books)
     .filter(b=>bible.books[b].testament===currentTestament)
     .forEach(book=>{
       const d=document.createElement("div");
       d.textContent=book;
-      if(book===selectedBook) d.classList.add("active");
       d.onclick=()=>{
         selectedBook=book;
-        renderBookGrid();
         renderChapterGrid(book);
       };
-      grid.appendChild(d);
+      g.appendChild(d);
     });
 }
-
-/* ===============================
-   CHAPTER & VERSE
-================================ */
 async function renderChapterGrid(book){
   const bible=await loadBible();
   const g=document.getElementById("chapterGrid");
@@ -172,9 +189,8 @@ async function renderChapterGrid(book){
     s.onclick=()=>renderVerseGrid(book,ch);
     g.appendChild(s);
   });
-  document.getElementById("chapterSection").classList.remove("hidden");
+  chapterSection.classList.remove("hidden");
 }
-
 async function renderVerseGrid(book,ch){
   const bible=await loadBible();
   const g=document.getElementById("verseGrid");
@@ -185,14 +201,12 @@ async function renderVerseGrid(book,ch){
     s.onclick=()=>addBookLink(book,+ch,+v);
     g.appendChild(s);
   });
-  document.getElementById("verseSection").classList.remove("hidden");
+  verseSection.classList.remove("hidden");
 }
-
 function addBookLink(book,chapter,verse){
   const list=loadBookmarks();
   list.forEach(b=>{
     if(same(b,activeBookmark)){
-      b.links=b.links||[];
       if(!b.links.find(l=>l.book===book&&l.chapter===chapter&&l.verse===verse)){
         b.links.push({book,chapter,verse});
       }
@@ -213,7 +227,6 @@ function renderNotes(){
 
   list.forEach(bm=>{
     ensureCreatedAt(bm);
-    normalizeVideos(bm);
 
     const c=document.createElement("div");
     c.className="note-card";
@@ -224,11 +237,20 @@ function renderNotes(){
           <strong>${bm.book} ${bm.chapter}:${bm.from}-${bm.to}</strong>
           <div class="note-date">🕒 ${formatDate(bm.createdAt)}</div>
         </div>
+
         <div class="note-actions">
           <button class="play">▶</button>
           <button class="link">➕ Kitabu</button>
           <button class="add-video">➕ Video</button>
           <button class="toggle-notes">➕ Notes</button>
+
+          <select class="export-select">
+            <option value="">Export</option>
+            <option value="text">Text</option>
+            <option value="pdf">PDF</option>
+            <option value="share">Share</option>
+          </select>
+
           <button class="del">🗑</button>
         </div>
       </div>
@@ -236,91 +258,80 @@ function renderNotes(){
       <textarea class="general-notes hidden"
         placeholder="Andika general notes hapa...">${bm.note||""}</textarea>
 
+      <div class="note-links">
+        ${bm.links.map(l=>`
+          <span class="link-item">📖 ${l.book} ${l.chapter}:${l.verse}</span>
+        `).join("")}
+      </div>
+
       <div class="video-input hidden">
-        <input class="video-url" placeholder="Bandika link ya YouTube..." />
+        <input class="video-url" placeholder="Bandika link ya YouTube"/>
         <button class="video-ok">OK</button>
       </div>
 
       <div class="video-list"></div>
     `;
 
-    /* GENERAL NOTES */
-    const gNotes=c.querySelector(".general-notes");
+    /* ACTIONS */
+    c.querySelector(".play").onclick=()=>playBookmark(bm);
+    c.querySelector(".link").onclick=()=>openBookModal(bm);
+
     c.querySelector(".toggle-notes").onclick=()=>{
-      gNotes.classList.toggle("hidden");
-      gNotes.focus();
+      c.querySelector(".general-notes").classList.toggle("hidden");
     };
-    gNotes.oninput=()=>{
+
+    c.querySelector(".general-notes").oninput=e=>{
       const arr=loadBookmarks();
-      arr.forEach(b=>{ if(same(b,bm)) b.note=gNotes.value; });
+      arr.forEach(b=>{ if(same(b,bm)) b.note=e.target.value; });
       saveBookmarks(arr);
     };
 
-    /* ADD VIDEO */
-    const vBox=c.querySelector(".video-input");
-    const vInput=c.querySelector(".video-url");
-    const vList=c.querySelector(".video-list");
-
+    /* VIDEO ADD */
     c.querySelector(".add-video").onclick=()=>{
-      vBox.classList.remove("hidden");
-      vInput.value="";
-      vInput.focus();
+      c.querySelector(".video-input").classList.remove("hidden");
     };
-
     c.querySelector(".video-ok").onclick=()=>{
-      const id=extractYouTubeID(vInput.value);
+      const url=c.querySelector(".video-url").value.trim();
+      const id=extractYouTubeID(url);
       if(!id) return alert("Link ya YouTube si sahihi");
-      addVideo(bm,vInput.value);
-      vBox.classList.add("hidden");
+      addVideo(bm,url);
       renderNotes();
     };
 
-    /* VIDEOS */
+    /* VIDEO RENDER (FIX) */
+    const vList=c.querySelector(".video-list");
     bm.videos.forEach((v,idx)=>{
       const id=extractYouTubeID(v.url);
       if(!id) return;
 
       const vc=document.createElement("div");
       vc.className="video-card";
-
       vc.innerHTML=`
-        <iframe src="https://www.youtube.com/embed/${id}" height="200" allowfullscreen></iframe>
-        <div class="video-actions">
-          <button class="toggle-video-note">➕ Video Notes</button>
-          <button class="remove-video">❌ Ondoa Video</button>
-        </div>
-        <textarea class="video-note hidden"
-          placeholder="Andika notes za video hii...">${v.note||""}</textarea>
+        <iframe
+          src="https://www.youtube.com/embed/${id}"
+          loading="lazy"
+          allowfullscreen>
+        </iframe>
+        <button class="remove-video">❌ Ondoa Video</button>
       `;
-
-      const vNote=vc.querySelector(".video-note");
-
-      vc.querySelector(".toggle-video-note").onclick=()=>{
-        vNote.classList.toggle("hidden");
-        vNote.focus();
-      };
-
       vc.querySelector(".remove-video").onclick=()=>{
         if(confirm("Ondoa video hii?")){
-          removeVideo(bm, idx);
+          removeVideo(bm,idx);
           renderNotes();
         }
       };
-
-      vNote.oninput=()=>{
-        const arr=loadBookmarks();
-        arr.forEach(b=>{
-          if(same(b,bm)){
-            b.videos[idx].note = vNote.value;
-          }
-        });
-        saveBookmarks(arr);
-      };
-
       vList.appendChild(vc);
     });
 
-    /* DELETE BOOKMARK */
+    /* EXPORT */
+    c.querySelector(".export-select").onchange=e=>{
+      if(e.target.value==="text") exportText(bm);
+      if(e.target.value==="pdf") exportPDF(bm);
+      if(e.target.value==="share") exportShare(bm);
+      e.target.value="";
+    };
+
+    /* DELETE */
     c.querySelector(".del").onclick=()=>{
       if(confirm("Futa bookmark yote pamoja na notes na video?")){
         saveBookmarks(loadBookmarks().filter(b=>!same(b,bm)));
@@ -343,12 +354,10 @@ document.addEventListener("DOMContentLoaded",()=>{
 
   document.getElementById("otBtn").onclick=()=>{
     currentTestament="OT";
-    otBtn.classList.add("active"); ntBtn.classList.remove("active");
     renderBookGrid();
   };
   document.getElementById("ntBtn").onclick=()=>{
     currentTestament="NT";
-    ntBtn.classList.add("active"); otBtn.classList.remove("active");
     renderBookGrid();
   };
 
