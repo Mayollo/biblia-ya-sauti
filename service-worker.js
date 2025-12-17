@@ -1,57 +1,52 @@
 /* =========================================
-   SERVICE WORKER – BIBLE APP
-   Clean • Offline • Test Friendly
+   BIBLIA YA SAUTI – SERVICE WORKER
+   APK & OFFLINE READY
 ========================================= */
 
-const CACHE_VERSION = "v1.0.0";
-const CACHE_NAME = `bible-app-${CACHE_VERSION}`;
+const CACHE_VERSION = "biblia-apk-v1";
 
-/* Files muhimu za msingi */
-const CORE_ASSETS = [
-  "/",                   // root
+/* Cache names */
+const STATIC_CACHE = `static-${CACHE_VERSION}`;
+const AUDIO_CACHE  = `audio-${CACHE_VERSION}`;
+
+/* Files muhimu za app */
+const STATIC_FILES = [
+  "/",
   "/index.html",
   "/chapter.html",
   "/notes.html",
-  "/settings.html",
-
   "/style.css",
-
   "/script.js",
   "/chapter.js",
   "/notes.js",
-  "/settings.js",
-
-  "/audio-core.js",
-  "/bookmark-core.js",
-
-  "/bible.json",
-
-  "/icons/nyumbani.png"
+  "/bible.json"
 ];
 
-/* =========================================
+/* ===============================
    INSTALL
-========================================= */
+================================ */
 self.addEventListener("install", event => {
+  self.skipWaiting();
+
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      console.log("[SW] Caching core assets");
-      return cache.addAll(CORE_ASSETS);
+    caches.open(STATIC_CACHE).then(cache => {
+      return cache.addAll(STATIC_FILES);
     })
   );
-  self.skipWaiting();
 });
 
-/* =========================================
+/* ===============================
    ACTIVATE
-========================================= */
+================================ */
 self.addEventListener("activate", event => {
   event.waitUntil(
     caches.keys().then(keys =>
       Promise.all(
         keys.map(key => {
-          if (key !== CACHE_NAME) {
-            console.log("[SW] Removing old cache:", key);
+          if (
+            key !== STATIC_CACHE &&
+            key !== AUDIO_CACHE
+          ) {
             return caches.delete(key);
           }
         })
@@ -61,40 +56,45 @@ self.addEventListener("activate", event => {
   self.clients.claim();
 });
 
-/* =========================================
+/* ===============================
    FETCH
-   Cache First → Network fallback
-========================================= */
+================================ */
 self.addEventListener("fetch", event => {
-  const req = event.request;
+  const request = event.request;
+  const url = new URL(request.url);
 
-  // skip non-GET requests
-  if (req.method !== "GET") return;
+  /* 🔊 AUDIO: cache-on-play */
+  if (request.destination === "audio" || url.pathname.endsWith(".mp3")) {
+    event.respondWith(cacheAudio(request));
+    return;
+  }
 
+  /* 📄 STATIC FILES */
   event.respondWith(
-    caches.match(req).then(cached => {
-      if (cached) return cached;
-
-      return fetch(req)
-        .then(res => {
-          // cache only valid responses
-          if (!res || res.status !== 200 || res.type !== "basic") {
-            return res;
-          }
-
-          const clone = res.clone();
-          caches.open(CACHE_NAME).then(cache => {
-            cache.put(req, clone);
-          });
-
-          return res;
-        })
-        .catch(() => {
-          // fallback ya offline (hiari)
-          if (req.destination === "document") {
-            return caches.match("/index.html");
-          }
-        });
+    caches.match(request).then(cached => {
+      return cached || fetch(request);
     })
   );
 });
+
+/* ===============================
+   AUDIO CACHE LOGIC
+================================ */
+async function cacheAudio(request){
+  const cache = await caches.open(AUDIO_CACHE);
+  const cached = await cache.match(request);
+
+  if (cached) {
+    return cached; // offline ready
+  }
+
+  try {
+    const response = await fetch(request);
+    if (response.ok) {
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch (err) {
+    return cached; // fallback
+  }
+}

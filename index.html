@@ -1,73 +1,97 @@
 <!DOCTYPE html>
 <html lang="sw">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Biblia ya Sauti</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Biblia ya Sauti</title>
 
-<link rel="stylesheet" href="style.css?v=2">
+  <!-- MAIN STYLES -->
+  <link rel="stylesheet" href="style.css?v=2" />
 
-
-<!-- PWA REQUIREMENTS (IMEHAMISHWA HAPA - NDANI YA HEAD) -->
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#1a1a1a">
-
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#1a1a1a" />
 </head>
 
 <body>
-  <div class="frame">
 
-    <!-- TOP BAR -->
-    <header class="topbar">
-      <button id="menuBtn" class="icon">☰</button>
-      <div class="title">BIBLIA YA SAUTI</div>
-      <a href="settings.html" class="icon">⚙</a>
-    </header>
+<div class="frame">
 
-    <!-- TESTAMENT SWITCH -->
-    <section class="testament-row">
-      <button id="leftArrow" class="big-arrow">⬅</button>
-      <div id="testamentTitle" class="testament-title">AGANO LA KALE</div>
-      <button id="rightArrow" class="big-arrow">➡</button>
-    </section>
+  <!-- =========================
+       TOP BAR
+  ========================== -->
+  <header class="topbar">
+    <button id="menuBtn" class="icon">☰</button>
+    <div class="title">BIBLIA YA SAUTI</div>
+    <a href="settings.html" class="icon">⚙</a>
+  </header>
 
-    <!-- BOOK LIST -->
-    <main id="bookList" class="book-list">
-      <div class="loading">Inapakia vitabu...</div>
-    </main>
+  <!-- =========================
+       TESTAMENT SWITCH
+  ========================== -->
+  <section class="testament-row">
+    <button id="leftArrow" class="big-arrow">⬅</button>
+    <div id="testamentTitle" class="testament-title">
+      AGANO LA KALE
+    </div>
+    <button id="rightArrow" class="big-arrow">➡</button>
+  </section>
 
- 
+  <!-- =========================
+       BOOK LIST
+  ========================== -->
+  <main id="bookList" class="book-list">
+    <div class="loading">Inapakia vitabu...</div>
+  </main>
 
-  </div>
+</div>
 
-<!-- SCRIPT ZAKO ZILIZOKUWEPO (HAIJABADILISHWA) -->
-<script src="script.js" defer></script>
+<!-- =========================
+     APP SCRIPTS (NO DUPLICATES)
+========================== -->
+<script src="audio-core.js"></script>
+<script src="script.js"></script>
 
+<!-- =========================
+     THEME APPLY (ULIOKUWA NAO)
+========================== -->
 <script>
-function applyTheme(){
+  function applyTheme(){
     const bg = localStorage.getItem('bgColor');
     const text = localStorage.getItem('textColor');
     const mode = localStorage.getItem('themeMode');
 
-    if(bg || text){
-        document.body.classList.add("custom-theme");
-        document.body.style.setProperty("--bg-color", bg || "#ffffff");
-        document.body.style.setProperty("--text-color", text || "#000000");
+    if (bg || text) {
+      document.body.classList.add("custom-theme");
+      document.body.style.setProperty("--bg-color", bg || "#ffffff");
+      document.body.style.setProperty("--text-color", text || "#000000");
     }
-    if(mode === "dark"){
-        document.body.style.background = "#222";
-        document.body.style.color = "#fff";
+
+    if (mode === "dark") {
+      document.body.style.background = "#222";
+      document.body.style.color = "#fff";
     }
-}
-applyTheme();
+  }
+  applyTheme();
 </script>
 
-<!-- PWA SERVICE WORKER REGISTRATION (IMEONGEZWA TU) -->
-<script src="audio-core.js"></script>
-<script src="script.js"></script>
-<script src="app.js"></script>
-
-
+<!-- =========================
+     SERVICE WORKER REGISTRATION
+========================== -->
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker
+        .register("service-worker.js")
+        .then(reg => {
+          console.log("Service Worker registered:", reg.scope);
+        })
+        .catch(err => {
+          console.error("Service Worker registration failed:", err);
+        });
+    });
+  }
+</script>
 
 </body>
 </html>
