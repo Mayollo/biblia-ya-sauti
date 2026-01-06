@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Notes</title>
+  <title>SOMO</title>
 
-  <!-- STYLES -->
   <link rel="stylesheet" href="style.css">
 </head>
 
@@ -19,58 +18,18 @@
       <img src="icons/nyumbani.png" alt="Nyumbani">
     </a>
 
-    <h2>Notes</h2>
+    <h2>MASOMO</h2>
 
-    <button id="continueReadingBtn" class="continue-btn">
-      ▶ Endelea Kusoma
-    </button>
+    <button id="addSomoBtn" class="notes-btn">＋ SOMO</button>
   </header>
 
-  <!-- NOTES LIST -->
+  <!-- NOTES -->
   <div id="notesContainer" class="notes-container">
-    <!-- Notes rendered by notes.js -->
+    <!-- Rendered by notes.js -->
   </div>
 
 </div>
 
-<!-- ===============================
-     BOOK LINK MODAL
-================================ -->
-<div id="bookLinkModal" class="modal hidden">
-  <div class="modal-box large">
-
-    <h3>➕ Unganisha Kitabu</h3>
-
-    <div class="testament-toggle">
-      <button id="otBtn" class="testament-btn active">Agano la Kale</button>
-      <button id="ntBtn" class="testament-btn">Agano Jipya</button>
-    </div>
-
-    <section>
-      <h4>Vitabu</h4>
-      <div id="bookGrid" class="book-grid"></div>
-    </section>
-
-    <section id="chapterSection" class="hidden">
-      <h4>Sura</h4>
-      <div id="chapterGrid" class="chip-grid"></div>
-    </section>
-
-    <section id="verseSection" class="hidden">
-      <h4>Mstari</h4>
-      <div id="verseGrid" class="chip-grid"></div>
-    </section>
-
-    <div class="modal-actions">
-      <button id="cancelBookLinkBtn">Funga</button>
-    </div>
-
-  </div>
-</div>
-
-<!-- ===============================
-     SCRIPTS
-================================ -->
 <script src="audio-core.js"></script>
 <script src="notes.js"></script>
 

@@ -1,7 +1,4 @@
-/* =========================================
-   CHAPTER SCRIPT – WITH NOTES BUTTON
-========================================= */
-
+// Ensure the script works after DOM is loaded
 document.addEventListener("DOMContentLoaded", async () => {
 
   if (!window.AudioCore) {
@@ -156,6 +153,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     progressFill.style.width = (p * 100) + "%";
   };
 
+  // Navigation Buttons for Chapter
   document.getElementById("prevChapterBtn").onclick =
     () => location.href =
       `chapter.html?book=${encodeURIComponent(book)}&chapter=${Number(chapter)-1}`;
@@ -163,5 +161,45 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("nextChapterBtn").onclick =
     () => location.href =
       `chapter.html?book=${encodeURIComponent(book)}&chapter=${Number(chapter)+1}`;
+
+  // Ensure First and Last Chapters Don't Go Out of Bound
+  const totalChapters = Object.keys(bible.books[book].chapters).length;
+  if (Number(chapter) <= 1) {
+    document.getElementById("prevChapterBtn").disabled = true;
+  }
+  if (Number(chapter) >= totalChapters) {
+    document.getElementById("nextChapterBtn").disabled = true;
+  }
+
+  /* ===============================
+     SWIPE FUNCTIONALITY
+  ================================ */
+  let startX = 0;
+  let endX = 0;
+
+  const chapterContent = document.getElementById("chapterContent");
+
+  chapterContent.addEventListener("touchstart", (e) => {
+    startX = e.touches[0].clientX;  // Get the starting position
+  });
+
+  chapterContent.addEventListener("touchend", (e) => {
+    endX = e.changedTouches[0].clientX;  // Get the ending position
+
+    // If swipe is long enough
+    if (Math.abs(startX - endX) > 50) {  // You can adjust the threshold
+      if (startX > endX) {
+        // Swiped left, go to the next chapter
+        if (Number(chapter) < Object.keys(bible.books[book].chapters).length) {
+          location.href = `chapter.html?book=${encodeURIComponent(book)}&chapter=${Number(chapter) + 1}`;
+        }
+      } else {
+        // Swiped right, go to the previous chapter
+        if (Number(chapter) > 1) {
+          location.href = `chapter.html?book=${encodeURIComponent(book)}&chapter=${Number(chapter) - 1}`;
+        }
+      }
+    }
+  });
 
 });

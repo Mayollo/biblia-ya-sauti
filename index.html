@@ -1,65 +1,41 @@
 <!DOCTYPE html>
-<html lang="sw">
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Biblia ya Sauti</title>
-
-  <!-- STYLES -->
-  <link rel="stylesheet" href="style.css?v=2" />
-
-  <!-- PWA -->
-  <link rel="manifest" href="./manifest.json" />
-  <meta name="theme-color" content="#1a1a1a" />
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-
-<div class="frame">
-
-  <!-- TOP BAR -->
-  <header class="topbar">
-    <button id="menuBtn" class="icon">☰</button>
-    <div class="title">BIBLIA YA SAUTI</div>
-    <a href="settings.html" class="icon">⚙</a>
+  <!-- Top Bar with Menu, Title and Notes button -->
+  <header class="top-bar">
+    <button class="menu-btn">
+      <img src="menu-icon.png" alt="Menu" />
+    </button>
+    <h2 class="title">Neno Biblia ya Sauti</h2>
+    <button class="notes-btn">Somo</button>
   </header>
 
-  <!-- TESTAMENT SWITCH -->
-  <section class="testament-row">
-    <button id="leftArrow" class="big-arrow">⬅</button>
-    <div id="testamentTitle" class="testament-title">
-      AGANO LA KALE
-    </div>
-    <button id="rightArrow" class="big-arrow">➡</button>
-  </section>
+  <main>
+    <div class="book-list">
+      <!-- Old Testament Section -->
+      <div class="testament-section">
+        <h3>Agano la Kale</h3>
+        <div class="old-testament-books">
+          <!-- Content will be generated dynamically by script.js -->
+        </div>
+      </div>
 
-  <!-- BOOK LIST -->
-  <main id="bookList" class="book-list">
-    <div class="loading">Inapakia vitabu...</div>
+      <!-- New Testament Section -->
+      <div class="testament-section">
+        <h3>Agano Jipya</h3>
+        <div class="new-testament-books">
+          <!-- Content will be generated dynamically by script.js -->
+        </div>
+      </div>
+    </div>
   </main>
 
-</div>
-
-<!-- APP LOGIC -->
-<script src="audio-core.js"></script>
-<script src="script.js"></script>
-
-<!-- SERVICE WORKER REGISTRATION (OPTION A) -->
-<script>
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker
-        .register("./sw.js")
-        .then(reg => {
-          console.log("Service Worker registered:", reg.scope);
-        })
-        .catch(err => {
-          console.error("Service Worker registration failed:", err);
-        });
-    });
-  }
-</script>
-
-
+  <script src="script.js"></script>
 </body>
 </html>
