@@ -1,5 +1,6 @@
 const CACHE_VERSION = "biblia-v3";
 const STATIC_CACHE = `static-${CACHE_VERSION}`;
+const AUDIO_CACHE = `audio-${CACHE_VERSION}`;
 
 const STATIC_FILES = [
   "./",
@@ -20,6 +21,7 @@ const STATIC_FILES = [
   "./icons/pen.png"
 ];
 
+// Install event to cache static files
 self.addEventListener("install", event => {
   self.skipWaiting();
   event.waitUntil(
@@ -27,12 +29,13 @@ self.addEventListener("install", event => {
   );
 });
 
+// Activate event to clean up old caches
 self.addEventListener("activate", event => {
   event.waitUntil(
     caches.keys().then(keys =>
       Promise.all(
         keys.map(key => {
-          if (key !== STATIC_CACHE) {
+          if (key !== STATIC_CACHE && key !== AUDIO_CACHE) {
             return caches.delete(key);
           }
         })
@@ -42,10 +45,27 @@ self.addEventListener("activate", event => {
   self.clients.claim();
 });
 
+// Fetch event to serve cached files when offline
 self.addEventListener("fetch", event => {
   const req = event.request;
 
-  // CACHE FIRST – STATIC FILES
+  // Cache audio files (optional)
+  if (req.destination === "audio" || req.url.includes('.mp3')) {
+    event.respondWith(
+      caches.open(AUDIO_CACHE).then(cache => {
+        return cache.match(req).then(cached => {
+          if (cached) return cached;
+          return fetch(req).then(fetched => {
+            cache.put(req, fetched.clone());
+            return fetched;
+          });
+        });
+      })
+    );
+    return;
+  }
+
+  // CACHE FIRST – STATIC FILES (INCLUDING AUDIO)
   event.respondWith(
     caches.match(req).then(cached => {
       return cached || fetch(req);
