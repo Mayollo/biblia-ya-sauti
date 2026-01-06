@@ -1,43 +1,37 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="sw">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Biblia ya Sauti</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="manifest" href="/manifest.json" />
-
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="manifest" href="/manifest.json" /> <!-- Manifest for PWA -->
 </head>
-<body>
-  <!-- Top Bar with Menu, Title and Notes button -->
-  <header class="top-bar">
-    <button class="menu-btn">
-      <img src="menu-icon.png" alt="Menu" />
-    </button>
-    <h2 class="title">Neno Biblia ya Sauti</h2>
-    <button class="notes-btn">Somo</button>
-  </header>
+<body class="chapter-page">
 
-  <main>
-    <div class="book-list">
-      <!-- Old Testament Section -->
-      <div class="testament-section">
-        <h3>Agano la Kale</h3>
-        <div class="old-testament-books">
-          <!-- Content will be generated dynamically by script.js -->
-        </div>
-      </div>
+<!-- TOP BAR -->
+<header class="top-bar">
+  <button class="menu-btn">
+    <img src="menu-icon.png" alt="Menu" />
+  </button>
+  <h2 class="title">Neno Biblia ya Sauti</h2>
+  <button class="notes-btn">Somo</button>
+</header>
 
-      <!-- New Testament Section -->
-      <div class="testament-section">
-        <h3>Agano Jipya</h3>
-        <div class="new-testament-books">
-          <!-- Content will be generated dynamically by script.js -->
-        </div>
-      </div>
+<main>
+  <div class="book-list">
+    <div class="testament-section">
+      <h3>Agano la Kale</h3>
+      <div class="old-testament-books"></div>
     </div>
-  </main>
 
-  <script src="script.js"></script>
+    <div class="testament-section">
+      <h3>Agano Jipya</h3>
+      <div class="new-testament-books"></div>
+    </div>
+  </div>
+</main>
+
+<script src="script.js"></script>
 </body>
 </html>

@@ -1,15 +1,12 @@
 /* =========================================
    BIBLIA YA SAUTI – SERVICE WORKER
-   GITHUB PAGES + APK READY
+   PWABUILDER APPROVED VERSION
 ========================================= */
 
-const CACHE_VERSION = "biblia-v1";
-
-/* Cache names */
+const CACHE_VERSION = "biblia-v3";
 const STATIC_CACHE = `static-${CACHE_VERSION}`;
-const AUDIO_CACHE  = `audio-${CACHE_VERSION}`;
 
-/* Files muhimu za app */
+/* FILES ZA MSINGI (NO AUDIO HERE) */
 const STATIC_FILES = [
   "./",
   "./index.html",
@@ -21,7 +18,12 @@ const STATIC_FILES = [
   "./notes.html",
   "./notes.js",
   "./bible.json",
-  "./manifest.json"
+  "./manifest.json",
+  /* ICONS */
+  "./icons/icon-192.png",
+  "./icons/icon-512.png",
+  "./icons/nyumbani.png",
+  "./icons/pen.png"
 ];
 
 /* ===============================
@@ -42,7 +44,7 @@ self.addEventListener("activate", event => {
     caches.keys().then(keys =>
       Promise.all(
         keys.map(key => {
-          if (key !== STATIC_CACHE && key !== AUDIO_CACHE) {
+          if (key !== STATIC_CACHE) {
             return caches.delete(key);
           }
         })
@@ -57,34 +59,19 @@ self.addEventListener("activate", event => {
 ================================ */
 self.addEventListener("fetch", event => {
   const req = event.request;
-  const url = new URL(req.url);
 
-  /* 🔊 AUDIO – auto cache on play */
-  if (req.destination === "audio" || url.pathname.endsWith(".mp3")) {
-    event.respondWith(cacheAudio(req));
-    return;
-  }
-
-  /* 📄 STATIC FILES */
+  /* CACHE FIRST – STATIC FILES (INCLUDING AUDIO) */
   event.respondWith(
-    caches.match(req).then(cached => cached || fetch(req))
+    caches.match(req).then(cached => {
+      // If we have the request in the cache, return it
+      return cached || fetch(req).then(fetched => {
+        // Cache the new audio or static content if fetched
+        if (req.destination === "audio" || req.destination === "video") {
+          // Cache audio or video files
+          caches.open(STATIC_CACHE).then(cache => cache.put(req, fetched));
+        }
+        return fetched;
+      });
+    })
   );
 });
-
-/* ===============================
-   AUDIO CACHE LOGIC
-================================ */
-async function cacheAudio(request){
-  const cache = await caches.open(AUDIO_CACHE);
-  const cached = await cache.match(request);
-
-  if (cached) return cached;
-
-  try{
-    const res = await fetch(request);
-    if (res.ok) cache.put(request, res.clone());
-    return res;
-  }catch(e){
-    return cached;
-  }
-}

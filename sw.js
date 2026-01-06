@@ -13,16 +13,12 @@ const STATIC_FILES = [
   "./style.css",
   "./script.js",
   "./audio-core.js",
-
   "./chapter.html",
   "./chapter.js",
-
   "./notes.html",
   "./notes.js",
-
   "./bible.json",
   "./manifest.json",
-
   /* ICONS */
   "./icons/icon-192.png",
   "./icons/icon-512.png",
