@@ -64,15 +64,18 @@ self.addEventListener("activate", event => {
 self.addEventListener("fetch", event => {
   const req = event.request;
 
-  /* 🚫 USIGUSE AUDIO / VIDEO */
-  if (req.destination === "audio" || req.destination === "video") {
-    return; // browser ichukue direct
-  }
-
-  /* CACHE FIRST – STATIC FILES */
+  /* CACHE FIRST – STATIC FILES (INCLUDING AUDIO) */
   event.respondWith(
     caches.match(req).then(cached => {
-      return cached || fetch(req);
+      // If we have the request in the cache, return it
+      return cached || fetch(req).then(fetched => {
+        // Cache the new audio or static content if fetched
+        if (req.destination === "audio" || req.destination === "video") {
+          // Cache audio or video files
+          caches.open(STATIC_CACHE).then(cache => cache.put(req, fetched));
+        }
+        return fetched;
+      });
     })
   );
 });

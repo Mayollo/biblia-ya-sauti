@@ -1,22 +1,39 @@
 {
-  "name": "Biblia ya Sauti",
-  "short_name": "Biblia",
-  "description": "Biblia ya Sauti kwa kusoma na kusikiliza Neno la Mungu",
+  "short_name": "Biblia ya Sauti",
+  "name": "Biblia ya Sauti - Audio Bible App",
+  "description": "An audio Bible app for listening to Bible chapters and verses.",
   "start_url": "/index.html",
-  "scope": "/",
   "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#ffffff",
-  "theme_color": "#1a1a1a",
-
+  "background_color": "#f4f4f4",
+  "theme_color": "#6DB6E7",
   "icons": [
     {
-      "src": "/icons/icon-192.png",
+      "src": "icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/icons/icon-512.png",
+      "src": "icons/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
