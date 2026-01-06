@@ -2,8 +2,8 @@
   "short_name": "Biblia ya Sauti",
   "name": "Biblia ya Sauti - Audio Bible App",
   "description": "An audio Bible app for listening to Bible chapters and verses.",
-  "start_url": "/index.html",  
-  "display": "standalone",     
+  "start_url": "/index.html",
+  "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#6DB6E7",
   "icons": [
