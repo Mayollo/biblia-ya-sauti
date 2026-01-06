@@ -4,7 +4,7 @@
   "description": "An audio Bible app for listening to Bible chapters and verses.",
   "start_url": "/index.html",
   "display": "standalone",
-  "background_color": "#f4f4f4",
+  "background_color": "#ffffff",
   "theme_color": "#6DB6E7",
   "icons": [
     {

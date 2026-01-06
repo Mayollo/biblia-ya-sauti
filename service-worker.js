@@ -1,12 +1,6 @@
-/* =========================================
-   BIBLIA YA SAUTI – SERVICE WORKER
-   PWABUILDER APPROVED VERSION
-========================================= */
-
 const CACHE_VERSION = "biblia-v3";
 const STATIC_CACHE = `static-${CACHE_VERSION}`;
 
-/* FILES ZA MSINGI (NO AUDIO HERE) */
 const STATIC_FILES = [
   "./",
   "./index.html",
@@ -26,9 +20,6 @@ const STATIC_FILES = [
   "./icons/pen.png"
 ];
 
-/* ===============================
-   INSTALL
-================================ */
 self.addEventListener("install", event => {
   self.skipWaiting();
   event.waitUntil(
@@ -36,9 +27,6 @@ self.addEventListener("install", event => {
   );
 });
 
-/* ===============================
-   ACTIVATE
-================================ */
 self.addEventListener("activate", event => {
   event.waitUntil(
     caches.keys().then(keys =>
@@ -54,24 +42,13 @@ self.addEventListener("activate", event => {
   self.clients.claim();
 });
 
-/* ===============================
-   FETCH
-================================ */
 self.addEventListener("fetch", event => {
   const req = event.request;
 
-  /* CACHE FIRST – STATIC FILES (INCLUDING AUDIO) */
+  // CACHE FIRST – STATIC FILES
   event.respondWith(
     caches.match(req).then(cached => {
-      // If we have the request in the cache, return it
-      return cached || fetch(req).then(fetched => {
-        // Cache the new audio or static content if fetched
-        if (req.destination === "audio" || req.destination === "video") {
-          // Cache audio or video files
-          caches.open(STATIC_CACHE).then(cache => cache.put(req, fetched));
-        }
-        return fetched;
-      });
+      return cached || fetch(req);
     })
   );
 });
